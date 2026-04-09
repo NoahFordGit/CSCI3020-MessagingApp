@@ -17,7 +17,7 @@ Users can create accounts, join or create servers, send messages in channels or 
 - **channels:** text channels in servers  
 - **messages:** messages with author, content, timestamp  
 - **roles:** permissions in servers  
-
+            
 ## Features
 - CRUD for users, servers, channels, and messages  
 - Search/filter and display related data  
@@ -29,3 +29,6 @@ Users can create accounts, join or create servers, send messages in channels or 
 1. Clone repo
 ```bash
 git clone https://github.com/NoahFordGit/CSCI3020-MessagingApp.git
+```
+
+Made for ETSU CSCI-3020: Advanced Database
