@@ -3,18 +3,18 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
-class MessageBase(BaseModel):
-    content: str = Field(..., description="Content of message")
+class DirectMessageBase(BaseModel):
+    content: str = Field(..., description="Content of direct message")
     author_id: str = Field(..., alias="authorId", description="User ID of author")
-    channel_id: str = Field(..., alias="channelId", description="Channel ID for the message")
-    edited: bool = Field(False, description="Whether the message has been edited")
+    recipient_id: str = Field(..., alias="recipientId", description="User ID of recipient")
+    edited: bool = Field(False, description="Whether the direct message has been edited")
 
 
-class MessageCreate(MessageBase):
+class DirectMessageCreate(DirectMessageBase):
     timestamp: datetime = Field(..., description="Time of message")
 
 
-class Message(MessageBase):
+class DirectMessage(DirectMessageBase):
     id: str = Field(..., alias="_id", description="Unique message ID")
     timestamp: datetime = Field(..., description="Time of message")
 
@@ -22,11 +22,11 @@ class Message(MessageBase):
         allow_population_by_field_name = True
         schema_extra = {
             "example": {
-                "_id": "m1001",
-                "content": "Hey everyone, welcome to the server!",
+                "_id": "dm1001",
+                "content": "Hey, are you working on the project?",
                 "authorId": "u1001",
-                "channelId": "c1001",
-                "timestamp": "2026-04-09T18:00:00Z",
+                "recipientId": "u1002",
+                "timestamp": "2026-04-09T19:00:00Z",
                 "edited": False,
             }
         }
