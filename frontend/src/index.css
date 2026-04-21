@@ -1,46 +1,77 @@
-* {
-  box-sizing: border-box;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 222 15% 13%;
+    --foreground: 210 20% 92%;
+    --card: 222 15% 16%;
+    --card-foreground: 210 20% 92%;
+    --popover: 222 15% 16%;
+    --popover-foreground: 210 20% 92%;
+    --primary: 235 86% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 15% 20%;
+    --secondary-foreground: 210 20% 80%;
+    --muted: 222 15% 18%;
+    --muted-foreground: 215 15% 55%;
+    --accent: 235 86% 65%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 222 15% 22%;
+    --input: 222 15% 20%;
+    --ring: 235 86% 65%;
+    --radius: 0.5rem;
+
+    --sidebar-servers: 222 20% 9%;
+    --sidebar-channels: 222 15% 12%;
+    --chat-bg: 222 15% 15%;
+    --message-hover: 222 15% 17%;
+    --online: 142 71% 45%;
+    --away: 38 92% 50%;
+    --dnd: 0 72% 51%;
+
+    --sidebar-background: 222 20% 9%;
+    --sidebar-foreground: 210 20% 70%;
+    --sidebar-primary: 235 86% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 15% 18%;
+    --sidebar-accent-foreground: 210 20% 92%;
+    --sidebar-border: 222 15% 15%;
+    --sidebar-ring: 235 86% 65%;
+
+    --chart-1: 235 86% 65%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
 }
 
-html,
-body,
-#root {
-  margin: 0;
-  min-height: 100%;
-  font-family: Inter, system-ui, sans-serif;
-  background: #f7f8fb;
-}
-
-button,
-input {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-}
-
-.login-page,
-.dashboard-page,
-.channel-page {
-  color: #1f2937;
-}
-
-button {
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: #fff;
-  padding: 10px 14px;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-input {
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  padding: 10px;
-  width: 100%;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-inter;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
 }
