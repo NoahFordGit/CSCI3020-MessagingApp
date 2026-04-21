@@ -2,11 +2,6 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-from database import db
-
-from fastapi import FastAPI, Request, HTTPException, Response
-
-app = FastAPI()
 
 class ServerBase(BaseModel):
     name: str = Field(..., description="Server name")
@@ -45,64 +40,3 @@ class Server(ServerBase):
         }
 
 
-# ENDPOINTS START HERE
-
-"""
-Endpoint Overview for servers.py:
-
-Note: place a tabbed X by each completed endpoint
-
-GET /servers                        
-GET /servers/{serverId}
-POST /servers
-PUT /servers/{serverId}
-DELETE /servers/{serverId}
-GET /servers/{serverId}/channels
-
-"""
-
-
-# servers.py
-# GET /servers
-# GET /servers/{serverId}
-# POST /servers
-# PUT /servers/{serverId}
-# DELETE /servers/{serverId}
-# GET /servers/{serverId}/channels
-#
-
-
-# GET /servers Endpoint
-@app.get(f"/servers", response_model=Server)
-async def get_servers(user_id):
-    return
-
-
-# GET /servers/{serverId}
-@app.get(f"/servers/{Server.id}", response_model=Server)
-async def get_server(serverId: str):
-    return
-
-
-# POST /servers
-@app.post(f"/servers", response_model=Server)
-async def post_servers(servers: Server):
-    return
-
-
-# PUT /servers/{serverId}
-@app.put(f"/servers/{Server: id}", response_model=Server)
-async def put_servers(serverId):
-    return
-
-
-# DELETE /servers/{serverId}
-@app.delete(f"/servers/{Server: id}", response_model=Server)
-async def delete_servers(serverId):
-    return
-
-
-# GET /servers/{serverId}/channels
-@app.get(f"/servers/{Server: id}/channels", response_model=Server)
-async def get_servers_channel(serverId):
-    return
