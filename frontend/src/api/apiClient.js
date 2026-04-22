@@ -36,12 +36,26 @@ class APIClient {
   // Users API
   async getCurrentUser() {
     try {
-      // Since we don't have authentication yet, return a mock user
-      // This should be updated when authentication is implemented
-      return this.currentUser || { id: 'u1', username: 'Guest', email: 'guest@example.com' };
+      // Return the current user if already set
+      if (this.currentUser) {
+        return this.currentUser;
+      }
+      
+      // Try to get from localStorage
+      const storedUser = localStorage.getItem('currentUser');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        this.currentUser = user;
+        return user;
+      }
+      
+      // Default user for now (should be replaced with auth)
+      // In production, this would fetch from /users/me after authentication is implemented
+      return { id: 'u1', username: 'Guest', email: 'guest@example.com' };
     } catch (error) {
       console.error('Failed to get current user:', error);
-      throw error;
+      // Return default user on error
+      return { id: 'u1', username: 'Guest', email: 'guest@example.com' };
     }
   }
 
@@ -51,6 +65,23 @@ class APIClient {
 
   async getUser(userId) {
     return this.request(`/users/${userId}`);
+  }
+
+  // Cache for user info to avoid repeated API calls
+  _userCache = new Map();
+
+  async getUserInfo(userId) {
+    if (this._userCache.has(userId)) {
+      return this._userCache.get(userId);
+    }
+    try {
+      const user = await this.getUser(userId);
+      this._userCache.set(userId, user);
+      return user;
+    } catch (error) {
+      console.warn(`Failed to get user info for ${userId}:`, error);
+      return { id: userId, username: 'Unknown' };
+    }
   }
 
   async createUser(userData) {
