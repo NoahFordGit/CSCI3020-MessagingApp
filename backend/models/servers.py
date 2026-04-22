@@ -26,9 +26,9 @@ class ServerUpdate(BaseModel):
 class Server(ServerBase):
     id: str = Field(..., alias="_id", description="Unique server ID")
 
-    class Config:
-        allow_population_by_field_name = True
-        schema_extra = {
+    model_config = {
+        "populate_by_name": True,
+        "json_schema_extra": {
             "example": {
                 "_id": "s1001",
                 "name": "CSCI Study Group",
@@ -38,3 +38,4 @@ class Server(ServerBase):
                 "users": ["u1001", "u1002"],
             }
         }
+    }

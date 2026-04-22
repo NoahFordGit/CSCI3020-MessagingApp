@@ -12,4 +12,4 @@ except Exception as e:
     print("Connection failed:")
     print(e)
 
-# run with "python -m backend.services.test_connection
+# run with "python -m backend.services.test_connection"

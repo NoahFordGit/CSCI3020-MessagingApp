@@ -31,9 +31,9 @@ class UserUpdate(BaseModel):
 class User(UserBase):
     id: str = Field(..., alias="_id", description="Unique user ID")
 
-    class Config:
-        allow_population_by_field_name = True
-        schema_extra = {
+    model_config = {
+        "populate_by_name": True,
+        "json_schema_extra": {
             "example": {
                 "_id": "u1001",
                 "username": "noahford",
@@ -42,3 +42,4 @@ class User(UserBase):
                 "serverIds": ["s1001", "s1002"],
             }
         }
+    }

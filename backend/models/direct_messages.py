@@ -18,9 +18,9 @@ class DirectMessage(DirectMessageBase):
     id: str = Field(..., alias="_id", description="Unique message ID")
     timestamp: datetime = Field(..., description="Time of message")
 
-    class Config:
-        allow_population_by_field_name = True
-        schema_extra = {
+    model_config = {
+        "populate_by_name": True,
+        "json_schema_extra": {
             "example": {
                 "_id": "dm1001",
                 "content": "Hey, are you working on the project?",
@@ -30,3 +30,4 @@ class DirectMessage(DirectMessageBase):
                 "edited": False,
             }
         }
+    }

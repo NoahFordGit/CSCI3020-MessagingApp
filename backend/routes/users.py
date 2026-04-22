@@ -3,8 +3,8 @@ from typing import List
 
 from fastapi import APIRouter, HTTPException, status
 
-from backend.database import db
-from backend.models.users import User, UserCreate, UserUpdate
+from database import db
+from models.users import User, UserCreate, UserUpdate
 
 router = APIRouter(prefix="/users", tags=["users"])
 
