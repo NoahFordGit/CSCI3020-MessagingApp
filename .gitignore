@@ -209,7 +209,6 @@ frontend/yarn-error.log*
 frontend/.env
 .cursorignore
 .cursorindexingignore
-
 node_modules/
 
 # Marimo
