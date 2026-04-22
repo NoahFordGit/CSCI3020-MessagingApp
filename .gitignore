@@ -210,6 +210,8 @@ frontend/.env
 .cursorignore
 .cursorindexingignore
 
+node_modules/
+
 # Marimo
 marimo/_static/
 marimo/_lsp/
