@@ -4,7 +4,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException, status
 
 from database import db
-from models.users import User, UserCreate, UserUpdate
+from models.users import User, UserCreate, UserUpdate, UserLogin
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -55,6 +55,30 @@ def create_user(user: UserCreate):
 
     collection.insert_one(user_data)
     return user_data
+
+
+@router.post("/login", response_model=User, status_code=status.HTTP_200_OK)
+def login_user(credentials: UserLogin):
+    collection = _user_collection()
+    
+    user = collection.find_one({"username": credentials.username})
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+        )
+    
+    if user.get("password") != credentials.password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+        )
+    
+    # Remove password from response
+    user_response = user.copy()
+    user_response.pop("password", None)
+    return user_response
 
 
 @router.put("/{user_id}", response_model=User)

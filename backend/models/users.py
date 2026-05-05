@@ -43,3 +43,9 @@ class User(UserBase):
             }
         }
     }
+
+
+class UserLogin(BaseModel):
+    username: str = Field(..., description="Username")
+    password: str = Field(..., description="Password")
+
