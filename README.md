@@ -2,8 +2,6 @@
 
 A full-stack messaging application built with **FastAPI**, **MongoDB**, and a React frontend. The project provides a simple system for user management and messaging between users through a REST API.
 
----
-
 ## Features
 
 - User registration and management  
@@ -12,16 +10,12 @@ A full-stack messaging application built with **FastAPI**, **MongoDB**, and a Re
 - MongoDB database integration  
 - Modular backend structure (routes, models, database layer)  
 
----
-
 ## Tech Stack
 
 - Backend: FastAPI (Python)  
 - Database: MongoDB (PyMongo)  
 - Frontend: React  
 - Environment: python-dotenv  
-
----
 
 ## Setup & Run
 
@@ -47,15 +41,11 @@ pip install -r requirements.txt
 python -m uvicorn backend.main:app --reload
 ```
 
----
-
 ## API Docs
 
 Once running, visit:
 
 - http://127.0.0.1:8000/docs
-
----
 
 ## Notes
 
