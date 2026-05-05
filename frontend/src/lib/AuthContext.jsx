@@ -21,12 +21,19 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingPublicSettings(true);
       setAuthError(null);
       
-      // Try to get current user
+      // Try to get current user from localStorage
       try {
-        const currentUser = await apiClient.getCurrentUser();
-        setUser(currentUser);
-        setIsAuthenticated(true);
-        apiClient.setCurrentUser(currentUser);
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          const currentUser = JSON.parse(storedUser);
+          setUser(currentUser);
+          setIsAuthenticated(true);
+          apiClient.setCurrentUser(currentUser);
+        } else {
+          // No stored user, keep isAuthenticated as false
+          setIsAuthenticated(false);
+          setUser(null);
+        }
       } catch (error) {
         console.error('Auth check failed:', error);
         setIsAuthenticated(false);
@@ -74,7 +81,9 @@ export const AuthProvider = ({ children }) => {
       authChecked,
       logout,
       navigateToLogin,
-      checkAppState
+      checkAppState,
+      setUser,
+      setIsAuthenticated
     }}>
       {children}
     </AuthContext.Provider>
