@@ -18,6 +18,11 @@ export default function Home() {
   useEffect(() => {
     loadUser();
     loadServers();
+    
+    // Poll for servers every 2 seconds (real-time updates)
+    const serverInterval = setInterval(loadServers, 2000);
+    
+    return () => clearInterval(serverInterval);
   }, [authUser]);
 
   const loadUser = async () => {
@@ -49,6 +54,13 @@ export default function Home() {
     }
   };
 
+  // Load channels when a server is selected (no polling to avoid interrupting typing)
+  useEffect(() => {
+    if (!selectedServer) return;
+    
+    loadChannels(selectedServer);
+  }, [selectedServer?.id, selectedServer?._id]);
+
   const handleSelectServer = (server) => {
     setSelectedServer(server);
     setShowDMs(false);
@@ -76,6 +88,7 @@ export default function Home() {
         onSelectDMs={handleSelectDMs}
         showDMs={showDMs}
         onServerCreated={loadServers}
+        currentUser={currentUser}
       />
 
       {/* Channel sidebar — only when server is selected */}

@@ -24,7 +24,7 @@ export default function ChatArea({ channel, currentUser }) {
 
   useEffect(() => {
     fetchMessages();
-    const interval = setInterval(fetchMessages, 3000); // Poll every 3 seconds
+    const interval = setInterval(fetchMessages, 1000); // Poll every 1 second for real-time updates
     return () => clearInterval(interval);
   }, [channel?.id, channel?._id]);
 

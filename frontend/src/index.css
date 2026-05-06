@@ -1,4 +1,20 @@
 @tailwind base;
+
+@layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+  
+  * {
+    scroll-behavior: auto !important;
+    scroll-margin: 0 !important;
+  }
+  
+  /* Prevent scrollIntoView on elements */
+  *:focus {
+    scroll-margin: 0 !important;
+  }
+}
 @tailwind components;
 @tailwind utilities;
 

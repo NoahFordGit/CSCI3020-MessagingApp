@@ -92,11 +92,16 @@ export default function ChannelSidebar({ server, channels, selectedChannelId, on
           return (
             <div
               key={chId}
-              className={`group flex items-center justify-between mx-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors
+              className={`group flex items-center justify-between mx-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors outline-none
                 ${selectedChannelId === chId
                   ? "bg-secondary text-foreground"
                   : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"}`}
-              onClick={() => onSelectChannel(ch)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onSelectChannel(ch);
+              }}
+              tabIndex={-1}
             >
               <div className="flex items-center gap-1.5 min-w-0">
                 <Hash className="w-4 h-4 flex-shrink-0" />

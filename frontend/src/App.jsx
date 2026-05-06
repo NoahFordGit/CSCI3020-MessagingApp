@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { useEffect } from 'react';
 // Add page imports here
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -48,6 +49,32 @@ const AuthenticatedApp = () => {
 
 
 function App() {
+  useEffect(() => {
+    // Global click handler to prevent scroll shifts
+    const handleClick = (e) => {
+      const scrollY = window.scrollY;
+      const scrollX = window.scrollX;
+      
+      // Prevent immediate scroll jump
+      window.scrollTo(scrollX, scrollY);
+      
+      // Prevent scroll in next frame
+      requestAnimationFrame(() => {
+        window.scrollTo(scrollX, scrollY);
+      });
+      
+      // Prevent scroll in next 2 frames to be extra sure
+      setTimeout(() => {
+        window.scrollTo(scrollX, scrollY);
+      }, 0);
+    };
+
+    document.addEventListener('click', handleClick, true);
+    
+    return () => {
+      document.removeEventListener('click', handleClick, true);
+    };
+  }, []);
 
   return (
     <AuthProvider>

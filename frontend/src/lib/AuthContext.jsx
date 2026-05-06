@@ -58,7 +58,9 @@ export const AuthProvider = ({ children }) => {
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
+    setAuthError(null);
     apiClient.setCurrentUser(null);
+    localStorage.removeItem('currentUser');
     
     if (shouldRedirect) {
       window.location.href = '/';
