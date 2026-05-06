@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MessageSquare, Send, Users, X, MoreVertical } from "lucide-react";
+import { MessageSquare, Send, Users, X, MoreVertical, Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { apiClient } from "@/api/apiClient";
@@ -16,6 +16,15 @@ export default function DMArea({ currentUser }) {
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
+  const [showDMFilter, setShowDMFilter] = useState(false);
+  const [dmFilterType, setDmFilterType] = useState("all");
+  const [dmSearchContent, setDmSearchContent] = useState("");
+  const [dmSearchAuthor, setDmSearchAuthor] = useState("");
+  const [dmStartDate, setDmStartDate] = useState("");
+  const [dmEndDate, setDmEndDate] = useState("");
+  const [isFilteringDM, setIsFilteringDM] = useState(false);
+  const [filterLoading, setFilterLoading] = useState(false);
+  const [filterError, setFilterError] = useState("");
 
   useEffect(() => {
     loadData();
@@ -64,6 +73,7 @@ export default function DMArea({ currentUser }) {
   const fetchMessages = async (userId) => {
     if (!userId || !currentUser) return;
     try {
+      setFilterError("");
       const currentUserId = currentUser.id || currentUser._id;
       const msgs = await apiClient.getDirectMessages(currentUserId, userId);
       setMessages(msgs || []);
@@ -76,6 +86,72 @@ export default function DMArea({ currentUser }) {
       }
     } catch (error) {
       console.error('Failed to fetch messages:', error);
+      setFilterError("Failed to load messages");
+    }
+  };
+
+  const handleApplyDMFilter = async () => {
+    if (dmFilterType === "all") {
+      await fetchMessages(selectedUser.id || selectedUser._id);
+      setIsFilteringDM(false);
+      return;
+    }
+
+    try {
+      setFilterLoading(true);
+      setFilterError("");
+      const selectedUserId = selectedUser.id || selectedUser._id;
+      const currentUserId = currentUser.id || currentUser._id;
+      let filteredMessages = [];
+
+      if (dmFilterType === "content" && dmSearchContent.trim()) {
+        const allResults = await apiClient.searchDirectMessages(dmSearchContent);
+        // Filter to only messages with selected user
+        filteredMessages = allResults.filter(msg => 
+          (msg.author_id === selectedUserId || msg.recipientId === selectedUserId || msg.author_id === selectedUser._id || msg.recipient_id === selectedUser._id) &&
+          (msg.author_id === currentUserId || msg.recipientId === currentUserId || msg.author_id === currentUser._id || msg.recipient_id === currentUser._id)
+        );
+      } else if (dmFilterType === "author" && dmSearchAuthor.trim()) {
+        const allResults = await apiClient.searchDirectMessagesByAuthor(dmSearchAuthor);
+        // Filter to only messages with selected user
+        filteredMessages = allResults.filter(msg => 
+          (msg.author_id === selectedUserId || msg.recipientId === selectedUserId || msg.author_id === selectedUser._id || msg.recipient_id === selectedUser._id) &&
+          (msg.author_id === currentUserId || msg.recipientId === currentUserId || msg.author_id === currentUser._id || msg.recipient_id === currentUser._id)
+        );
+      } else if (dmFilterType === "time") {
+        if (!dmStartDate && !dmEndDate) {
+          setFilterError("Please select a date range");
+          setFilterLoading(false);
+          return;
+        }
+        filteredMessages = await apiClient.searchDirectMessagesByTimeRange(dmStartDate, dmEndDate);
+        // Filter to only messages with selected user
+        filteredMessages = filteredMessages.filter(msg => 
+          (msg.author_id === selectedUserId || msg.recipientId === selectedUserId || msg.author_id === selectedUser._id || msg.recipient_id === selectedUser._id) &&
+          (msg.author_id === currentUserId || msg.recipientId === currentUserId || msg.author_id === currentUser._id || msg.recipient_id === currentUser._id)
+        );
+      }
+
+      setMessages(filteredMessages || []);
+      setIsFilteringDM(true);
+    } catch (error) {
+      console.error('Failed to filter messages:', error);
+      setFilterError(`Failed to filter by ${dmFilterType}: ${error.message}`);
+    } finally {
+      setFilterLoading(false);
+    }
+  };
+
+  const handleClearDMFilter = async () => {
+    setDmFilterType("all");
+    setDmSearchContent("");
+    setDmSearchAuthor("");
+    setDmStartDate("");
+    setDmEndDate("");
+    setFilterError("");
+    setIsFilteringDM(false);
+    if (selectedUser) {
+      await fetchMessages(selectedUser.id || selectedUser._id);
     }
   };
 
@@ -84,7 +160,11 @@ export default function DMArea({ currentUser }) {
     if (!selectedUser) return;
     const userId = selectedUser.id || selectedUser._id;
     fetchMessages(userId);
-    const interval = setInterval(() => fetchMessages(userId), 1000); // Poll every 1 second for real-time updates
+    const interval = setInterval(() => {
+      if (!isFilteringDM) {
+        fetchMessages(userId);
+      }
+    }, 2000);
     return () => clearInterval(interval);
   }, [selectedUser?.id, selectedUser?._id]);
 
@@ -101,7 +181,11 @@ export default function DMArea({ currentUser }) {
         recipientId: selectedUser.id || selectedUser._id,
       });
       setNewMessage("");
-      await fetchMessages(selectedUser.id || selectedUser._id);
+      if (isFilteringDM) {
+        await handleClearDMFilter();
+      } else {
+        await fetchMessages(selectedUser.id || selectedUser._id);
+      }
       if (!conversations.find((u) => (u.id || u._id) === (selectedUser.id || selectedUser._id))) {
         setConversations((prev) => [selectedUser, ...prev]);
       } else {
@@ -119,7 +203,11 @@ export default function DMArea({ currentUser }) {
   const handleEdit = async (id, content) => {
     try {
       await apiClient.updateDirectMessage(id, { content, edited: true });
-      await fetchMessages(selectedUser.id || selectedUser._id);
+      if (isFilteringDM) {
+        await handleApplyDMFilter();
+      } else {
+        await fetchMessages(selectedUser.id || selectedUser._id);
+      }
     } catch (error) {
       console.error('Failed to edit message:', error);
     }
@@ -128,7 +216,11 @@ export default function DMArea({ currentUser }) {
   const handleDelete = async (id) => {
     try {
       await apiClient.deleteDirectMessage(id);
-      await fetchMessages(selectedUser.id || selectedUser._id);
+      if (isFilteringDM) {
+        await handleApplyDMFilter();
+      } else {
+        await fetchMessages(selectedUser.id || selectedUser._id);
+      }
     } catch (error) {
       console.error('Failed to delete message:', error);
     }
@@ -257,31 +349,204 @@ export default function DMArea({ currentUser }) {
                 )}
               </div>
               <div>
-                <h3 className="font-semibold text-sm">{selectedUser.username || selectedUser.email}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-sm">{selectedUser.username || selectedUser.email}</h3>
+                  {isFilteringDM && (
+                    <span className="text-xs bg-blue-500/20 text-blue-500 px-2 py-0.5 rounded">Filtered</span>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {onlineUsers.has(selectedUser.id || selectedUser._id) ? "Online" : "Offline"}
                 </p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedUser(null)}
-              className="h-8 w-8 p-0"
-            >
-              <X className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowDMFilter(!showDMFilter)}
+                className={isFilteringDM ? "bg-secondary" : ""}
+              >
+                <Filter className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedUser(null)}
+                className="h-8 w-8 p-0"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
+
+          {/* Filter Panel for DMs */}
+          {showDMFilter && (
+            <div className="px-4 py-3 border-b border-border bg-muted/30 space-y-3">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Filter by</label>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={() => setDmFilterType("all")}
+                    className={`text-xs px-3 py-1 rounded transition-colors ${
+                      dmFilterType === "all"
+                        ? "bg-blue-500 text-white"
+                        : "bg-muted hover:bg-muted/80"
+                    }`}
+                  >
+                    All
+                  </button>
+                  <button
+                    onClick={() => setDmFilterType("content")}
+                    className={`text-xs px-3 py-1 rounded transition-colors ${
+                      dmFilterType === "content"
+                        ? "bg-blue-500 text-white"
+                        : "bg-muted hover:bg-muted/80"
+                    }`}
+                  >
+                    Content
+                  </button>
+                  <button
+                    onClick={() => setDmFilterType("author")}
+                    className={`text-xs px-3 py-1 rounded transition-colors ${
+                      dmFilterType === "author"
+                        ? "bg-blue-500 text-white"
+                        : "bg-muted hover:bg-muted/80"
+                    }`}
+                  >
+                    Author
+                  </button>
+                  <button
+                    onClick={() => setDmFilterType("time")}
+                    className={`text-xs px-3 py-1 rounded transition-colors ${
+                      dmFilterType === "time"
+                        ? "bg-blue-500 text-white"
+                        : "bg-muted hover:bg-muted/80"
+                    }`}
+                  >
+                    Date Range
+                  </button>
+                </div>
+              </div>
+
+              {dmFilterType === "content" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Search Content</label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter keywords..."
+                      value={dmSearchContent}
+                      onChange={(e) => setDmSearchContent(e.target.value)}
+                      className="flex-1 h-8 text-xs bg-input border-border"
+                      onKeyDown={(e) => e.key === "Enter" && handleApplyDMFilter()}
+                    />
+                    <Button 
+                      size="sm" 
+                      onClick={handleApplyDMFilter}
+                      disabled={filterLoading || !dmSearchContent.trim()}
+                      className="h-8"
+                    >
+                      <Search className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {dmFilterType === "author" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Search by Author Username</label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter username..."
+                      value={dmSearchAuthor}
+                      onChange={(e) => setDmSearchAuthor(e.target.value)}
+                      className="flex-1 h-8 text-xs bg-input border-border"
+                      onKeyDown={(e) => e.key === "Enter" && handleApplyDMFilter()}
+                    />
+                    <Button 
+                      size="sm" 
+                      onClick={handleApplyDMFilter}
+                      disabled={filterLoading || !dmSearchAuthor.trim()}
+                      className="h-8"
+                    >
+                      <Search className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {dmFilterType === "time" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Date Range</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-muted-foreground">From</label>
+                      <Input
+                        type="date"
+                        value={dmStartDate}
+                        onChange={(e) => setDmStartDate(e.target.value)}
+                        className="h-8 text-xs bg-input border-border"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">To</label>
+                      <Input
+                        type="date"
+                        value={dmEndDate}
+                        onChange={(e) => setDmEndDate(e.target.value)}
+                        className="h-8 text-xs bg-input border-border"
+                      />
+                    </div>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    onClick={handleApplyDMFilter}
+                    disabled={filterLoading || (!dmStartDate && !dmEndDate)}
+                    className="w-full h-8"
+                  >
+                    Search
+                  </Button>
+                </div>
+              )}
+
+              {filterError && (
+                <div className="text-xs text-red-500 bg-red-500/10 px-2 py-1 rounded">
+                  {filterError}
+                </div>
+              )}
+
+              {isFilteringDM && (
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={handleClearDMFilter}
+                  className="w-full h-8"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Clear Filters
+                </Button>
+              )}
+            </div>
+          )}
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto py-4 px-2">
-            {messages.length === 0 ? (
+            {filterLoading && (
+              <div className="flex items-center justify-center h-20 text-muted-foreground">
+                <div className="text-sm">Searching messages...</div>
+              </div>
+            )}
+            {!filterLoading && messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                 <MessageSquare className="w-12 h-12 mb-3 opacity-20" />
-                <p className="font-semibold text-foreground">No messages yet</p>
-                <p className="text-sm">Start a conversation with {selectedUser.username || selectedUser.email}</p>
+                <p className="font-semibold text-foreground">
+                  {isFilteringDM ? "No messages match your filter" : "No messages yet"}
+                </p>
+                <p className="text-sm">
+                  {isFilteringDM ? "Try adjusting your search" : `Start a conversation with ${selectedUser.username || selectedUser.email}`}
+                </p>
               </div>
-            ) : (
+            ) : !filterLoading && (
               <>
                 {messages.map((msg) => (
                   <MessageItem

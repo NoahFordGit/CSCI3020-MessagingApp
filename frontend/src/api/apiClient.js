@@ -212,6 +212,49 @@ class APIClient {
     });
   }
 
+  // Aggregation APIs - Message filtering and search
+  async searchChannelMessages(content, channelId) {
+    return this.request(`/filter/messages/search/content?content=${encodeURIComponent(content)}&channel_id=${channelId}`);
+  }
+
+  async searchMessagesByAuthor(username, channelId = null) {
+    let url = `/filter/messages/search/author?username=${encodeURIComponent(username)}`;
+    if (channelId) {
+      url += `&channel_id=${channelId}`;
+    }
+    return this.request(url);
+  }
+
+  async searchMessagesByTimeRange(channelId, startDate = null, endDate = null) {
+    let url = `/filter/messages/search/time-range?channel_id=${channelId}`;
+    if (startDate) {
+      url += `&start_date=${startDate}`;
+    }
+    if (endDate) {
+      url += `&end_date=${endDate}`;
+    }
+    return this.request(url);
+  }
+
+  async searchDirectMessages(content) {
+    return this.request(`/filter/direct-messages/search/content?content=${encodeURIComponent(content)}`);
+  }
+
+  async searchDirectMessagesByAuthor(username) {
+    return this.request(`/filter/direct-messages/search/author?username=${encodeURIComponent(username)}`);
+  }
+
+  async searchDirectMessagesByTimeRange(startDate = null, endDate = null) {
+    let url = `/filter/direct-messages/search/time-range`;
+    if (startDate || endDate) {
+      const params = [];
+      if (startDate) params.push(`start_date=${startDate}`);
+      if (endDate) params.push(`end_date=${endDate}`);
+      url += `?${params.join('&')}`;
+    }
+    return this.request(url);
+  }
+
   // Subscription system (for real-time updates - simplified)
   subscribe(entity, callback) {
     if (!this.subscriptions.has(entity)) {
