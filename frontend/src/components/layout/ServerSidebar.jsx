@@ -22,22 +22,24 @@ export default function ServerSidebar({ servers, selectedServerId, onSelectServe
   const [newServerName, setNewServerName] = useState("");
 
   const handleCreateServer = async () => {
-    if (!newServerName.trim()) return;
-    try {
-      await apiClient.createServer({ 
-        name: newServerName.trim(), 
-        description: "",
-        ownerId: "u1", // TODO: Use actual current user ID
-        channelIds: [],
-        users: []
-      });
-      setNewServerName("");
-      setShowCreate(false);
-      onServerCreated();
-    } catch (error) {
-      console.error('Failed to create server:', error);
-    }
-  };
+  if (!newServerName.trim() || !currentUser) return;
+
+  try {
+    await apiClient.createServer({ 
+      name: newServerName.trim(), 
+      description: "",
+      ownerId: currentUser.id || currentUser._id, 
+      channelIds: [],
+      users: [currentUser.id || currentUser._id]
+    });
+
+    setNewServerName("");
+    setShowCreate(false);
+    onServerCreated();
+  } catch (error) {
+    console.error('Failed to create server:', error);
+  }
+};
 
   const handleLogout = () => {
     logout(true);
