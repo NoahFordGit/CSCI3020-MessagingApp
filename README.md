@@ -26,6 +26,10 @@ A full-stack messaging platform inspired by modern communication applications li
 
 ## Installation Guide
 
+### Video Setup Guide
+A step-by-step installation guide is available here:
+https://www.youtube.com/watch?v=F6En3AkKYvw
+
 ### Requirements
 
 - Python 3.11+
