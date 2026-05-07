@@ -106,7 +106,7 @@ npm run dev
 The frontend application will run on:
 
 ```text
-http://localhost:5137
+http://localhost:5173
 ```
 
 ## Environment Variables
