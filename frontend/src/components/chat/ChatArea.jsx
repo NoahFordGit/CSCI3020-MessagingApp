@@ -32,7 +32,8 @@ export default function ChatArea({ channel, currentUser }) {
       // Extract unique authors and fetch their usernames
       const authorIds = new Set();
       msgs?.forEach(msg => {
-        if (msg.author_id) authorIds.add(msg.author_id);
+        const authorId = msg.authorId || msg.author_id;
+        if (authorId) authorIds.add(authorId);
       });
       
       // Get usernames for each author

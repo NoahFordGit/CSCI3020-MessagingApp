@@ -19,7 +19,8 @@ export default function DMArea({ currentUser }) {
   const [showDMFilter, setShowDMFilter] = useState(false);
   const [dmFilterType, setDmFilterType] = useState("all");
   const [dmSearchContent, setDmSearchContent] = useState("");
-  const [dmSearchAuthor, setDmSearchAuthor] = useState("");
+  const [dmSelectedAuthor, setDmSelectedAuthor] = useState("");
+  const [dmAuthors, setDmAuthors] = useState([]);
   const [dmStartDate, setDmStartDate] = useState("");
   const [dmEndDate, setDmEndDate] = useState("");
   const [isFilteringDM, setIsFilteringDM] = useState(false);
@@ -104,19 +105,26 @@ export default function DMArea({ currentUser }) {
       const currentUserId = currentUser.id || currentUser._id;
       let filteredMessages = [];
 
+      const isDirectMessageBetweenUsers = (msg, userA, userB) => {
+        const authorId = msg.authorId || msg.author_id;
+        const recipientId = msg.recipientId || msg.recipient_id;
+        return (
+          (authorId === userA && recipientId === userB) ||
+          (authorId === userB && recipientId === userA)
+        );
+      };
+
       if (dmFilterType === "content" && dmSearchContent.trim()) {
         const allResults = await apiClient.searchDirectMessages(dmSearchContent);
-        // Filter to only messages with selected user
-        filteredMessages = allResults.filter(msg => 
-          (msg.author_id === selectedUserId || msg.recipientId === selectedUserId || msg.author_id === selectedUser._id || msg.recipient_id === selectedUser._id) &&
-          (msg.author_id === currentUserId || msg.recipientId === currentUserId || msg.author_id === currentUser._id || msg.recipient_id === currentUser._id)
+        filteredMessages = allResults.filter((msg) =>
+          isDirectMessageBetweenUsers(msg, selectedUserId, currentUserId)
         );
-      } else if (dmFilterType === "author" && dmSearchAuthor.trim()) {
-        const allResults = await apiClient.searchDirectMessagesByAuthor(dmSearchAuthor);
-        // Filter to only messages with selected user
-        filteredMessages = allResults.filter(msg => 
-          (msg.author_id === selectedUserId || msg.recipientId === selectedUserId || msg.author_id === selectedUser._id || msg.recipient_id === selectedUser._id) &&
-          (msg.author_id === currentUserId || msg.recipientId === currentUserId || msg.author_id === currentUser._id || msg.recipient_id === currentUser._id)
+      } else if (dmFilterType === "author" && dmSelectedAuthor) {
+        const selectedAuthorObj = dmAuthors.find((a) => a.id === dmSelectedAuthor);
+        const authorUsername = selectedAuthorObj?.username || dmSelectedAuthor;
+        const allResults = await apiClient.searchDirectMessagesByAuthor(authorUsername);
+        filteredMessages = allResults.filter((msg) =>
+          isDirectMessageBetweenUsers(msg, selectedUserId, currentUserId)
         );
       } else if (dmFilterType === "time") {
         if (!dmStartDate && !dmEndDate) {
@@ -125,10 +133,8 @@ export default function DMArea({ currentUser }) {
           return;
         }
         filteredMessages = await apiClient.searchDirectMessagesByTimeRange(dmStartDate, dmEndDate);
-        // Filter to only messages with selected user
-        filteredMessages = filteredMessages.filter(msg => 
-          (msg.author_id === selectedUserId || msg.recipientId === selectedUserId || msg.author_id === selectedUser._id || msg.recipient_id === selectedUser._id) &&
-          (msg.author_id === currentUserId || msg.recipientId === currentUserId || msg.author_id === currentUser._id || msg.recipient_id === currentUser._id)
+        filteredMessages = filteredMessages.filter((msg) =>
+          isDirectMessageBetweenUsers(msg, selectedUserId, currentUserId)
         );
       }
 
@@ -145,7 +151,7 @@ export default function DMArea({ currentUser }) {
   const handleClearDMFilter = async () => {
     setDmFilterType("all");
     setDmSearchContent("");
-    setDmSearchAuthor("");
+    setDmSelectedAuthor("");
     setDmStartDate("");
     setDmEndDate("");
     setFilterError("");
@@ -154,6 +160,28 @@ export default function DMArea({ currentUser }) {
       await fetchMessages(selectedUser.id || selectedUser._id);
     }
   };
+
+  useEffect(() => {
+    if (!selectedUser || !currentUser) {
+      setDmAuthors([]);
+      setDmSelectedAuthor("");
+      return;
+    }
+
+    const currentUserId = currentUser.id || currentUser._id;
+    const selectedUserId = selectedUser.id || selectedUser._id;
+    setDmAuthors([
+      {
+        id: currentUserId,
+        username: currentUser.username || currentUser.email || "You",
+      },
+      {
+        id: selectedUserId,
+        username: selectedUser.username || selectedUser.email || selectedUserId,
+      },
+    ]);
+    setDmSelectedAuthor("");
+  }, [selectedUser?.id, selectedUser?.username, selectedUser?.email, currentUser?.id, currentUser?.username, currentUser?.email]);
 
   // Poll for direct messages when a user is selected
   useEffect(() => {
@@ -463,19 +491,24 @@ export default function DMArea({ currentUser }) {
 
               {dmFilterType === "author" && (
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Search by Author Username</label>
+                  <label className="text-sm font-medium">Filter by Author</label>
                   <div className="flex gap-2">
-                    <Input
-                      placeholder="Enter username..."
-                      value={dmSearchAuthor}
-                      onChange={(e) => setDmSearchAuthor(e.target.value)}
-                      className="flex-1 h-8 text-xs bg-input border-border"
-                      onKeyDown={(e) => e.key === "Enter" && handleApplyDMFilter()}
-                    />
+                    <select
+                      value={dmSelectedAuthor}
+                      onChange={(e) => setDmSelectedAuthor(e.target.value)}
+                      className="flex-1 h-8 text-xs bg-input border-border rounded"
+                    >
+                      <option value="">Choose an author...</option>
+                      {dmAuthors.map((author) => (
+                        <option key={author.id} value={author.id}>
+                          {author.username}
+                        </option>
+                      ))}
+                    </select>
                     <Button 
                       size="sm" 
                       onClick={handleApplyDMFilter}
-                      disabled={filterLoading || !dmSearchAuthor.trim()}
+                      disabled={filterLoading || !dmSelectedAuthor}
                       className="h-8"
                     >
                       <Search className="w-4 h-4" />

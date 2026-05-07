@@ -58,7 +58,7 @@ async def search_by_content(content: str = Query(...), channel_id: str = Query(N
     ]
     
     if channel_id:
-        pipeline[0]["$match"]["channel_id"] = channel_id
+        pipeline[0]["$match"]["channelId"] = channel_id
 
     cursor = await run_in_threadpool(lambda: _messages_collection().aggregate(pipeline))
     results = await run_in_threadpool(lambda: list(cursor))
@@ -75,12 +75,12 @@ async def search_by_author(username: str = Query(...), channel_id: str = Query(N
     
     author_id = user.get("_id") or user.get("id")
     pipeline = [
-        {"$match": {"author_id": author_id}},
+        {"$match": {"authorId": author_id}},
         {"$sort": {"timestamp": -1}}
     ]
     
     if channel_id:
-        pipeline[0]["$match"]["channel_id"] = channel_id
+        pipeline[0]["$match"]["channelId"] = channel_id
 
     cursor = await run_in_threadpool(lambda: _messages_collection().aggregate(pipeline))
     results = await run_in_threadpool(lambda: list(cursor))
@@ -95,7 +95,7 @@ async def search_by_time_range(
 ):
     """Search messages by date range"""
     pipeline = [
-        {"$match": {"channel_id": channel_id}},
+        {"$match": {"channelId": channel_id}},
         {"$sort": {"timestamp": -1}}
     ]
     

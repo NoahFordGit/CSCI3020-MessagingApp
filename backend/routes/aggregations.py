@@ -24,7 +24,7 @@ async def message_search(content: str = Query(...), channel_id: str = Query(None
     
     # If channel_id is provided, filter by channel
     if channel_id:
-        pipeline[0]["$match"]["channel_id"] = channel_id
+        pipeline[0]["$match"]["channelId"] = channel_id
 
     cursor = await run_in_threadpool(lambda: db.messages.aggregate(pipeline))
     results = await run_in_threadpool(lambda: list(cursor))
@@ -34,14 +34,19 @@ async def message_search(content: str = Query(...), channel_id: str = Query(None
 
 # Endpoint to get messages by user/author
 @router.get("/filter/messages/author")
-async def message_search_author(author_id: str = Query(...), channel_id: str = Query(None)):
+async def message_search_author(username: str = Query(...), channel_id: str = Query(None)):
+    user = db.users.find_one({"username": username})
+    if not user:
+        return []
+
+    author_id = user.get("_id") or user.get("id")
     pipeline = [
-        {"$match": {"author_id": author_id}},
+        {"$match": {"authorId": author_id}},
         {"$sort": {"timestamp": -1}}
     ]
     
     if channel_id:
-        pipeline[0]["$match"]["channel_id"] = channel_id
+        pipeline[0]["$match"]["channelId"] = channel_id
 
     cursor = await run_in_threadpool(lambda: db.messages.aggregate(pipeline))
     results = await run_in_threadpool(lambda: list(cursor))
@@ -57,7 +62,7 @@ async def message_search_time_range(
     end_date: str = Query(None)     # ISO format: 2026-01-31
 ):
     pipeline = [
-        {"$match": {"channel_id": channel_id}},
+        {"$match": {"channelId": channel_id}},
         {"$sort": {"timestamp": -1}}
     ]
     
@@ -98,9 +103,14 @@ async def dm_search(content: str = Query(...)):
 
 # Endpoint to get dms by user/author
 @router.get("/filter/direct_messages/author")
-async def dm_search_author(author_id: str = Query(...)):
+async def dm_search_author(username: str = Query(...)):
+    user = db.users.find_one({"username": username})
+    if not user:
+        return []
+
+    author_id = user.get("_id") or user.get("id")
     pipeline = [
-        {"$match": {"author_id": author_id}},
+        {"$match": {"authorId": author_id}},
         {"$sort": {"timestamp": -1}}
     ]
 

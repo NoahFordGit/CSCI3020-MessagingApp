@@ -63,9 +63,6 @@ export default function ServerSidebar({ servers, selectedServerId, onSelectServe
             <MessageSquare className="w-6 h-6" />
           )}
         </button>
-        <div className="absolute left-16 bg-popover text-popover-foreground px-3 py-1.5 rounded text-sm font-medium whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-          Direct Messages
-        </div>
       </div>
 
       {/* Divider */}
