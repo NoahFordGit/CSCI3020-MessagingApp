@@ -4,16 +4,25 @@ A full-stack messaging platform inspired by modern communication applications li
 
 ## Features
 
-- Secure user registration and login
-- Server creation and management
-- Organized text channels within servers
-- Real-time messaging system
-- Private direct messaging between users
-- Message filtering and conversation search
-- Responsive React + Vite frontend
-- FastAPI backend with RESTful API architecture
-- MongoDB database integration
-- Modern sidebar-based interface for servers, channels, and DMs
+### Core Messaging System
+- Real-time messaging between users  
+- Private direct messaging  
+- Message filtering and conversation search  
+
+### Server & Channel Organization
+- Create and manage servers  
+- Structured text channels within servers  
+
+### Authentication & User Management
+- Secure user registration and login  
+
+### Full-Stack Architecture
+- FastAPI backend with RESTful API design  
+- MongoDB database integration  
+
+### Frontend Experience
+- Responsive React + Vite interface  
+- Sidebar-based navigation for servers, channels, and DMs
 
 ## Installation Guide
 
