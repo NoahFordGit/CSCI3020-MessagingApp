@@ -1,4 +1,4 @@
-# CSCI3020 Messaging App
+# CSCI-3020 Messaging App
 
 A full-stack messaging platform inspired by modern communication applications like Discord, featuring real-time messaging, server organization, and direct user communication.
 
