@@ -118,12 +118,20 @@ export default function ChatArea({ channel, currentUser }) {
 
   const handleSend = async () => {
     if (!newMessage.trim() || !channel || !currentUser) return;
+    
+    // Extract user ID - must have a valid ID
+    const userId = currentUser.id || currentUser._id;
+    if (!userId) {
+      console.error('Cannot send message: user ID is missing');
+      return;
+    }
+    
     setLoading(true);
     try {
       await apiClient.createMessage({
         content: newMessage.trim(),
         channelId: channel.id || channel._id,
-        authorId: currentUser.id || currentUser._id || "unknown",
+        authorId: userId,
       });
       setNewMessage("");
       // Clear filter to see new message

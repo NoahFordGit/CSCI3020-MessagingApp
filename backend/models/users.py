@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 
 class UserBase(BaseModel):
@@ -31,9 +31,9 @@ class UserUpdate(BaseModel):
 class User(UserBase):
     id: str = Field(..., alias="_id", description="Unique user ID")
 
-    model_config = {
-        "populate_by_name": True,
-        "json_schema_extra": {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        json_schema_extra={
             "example": {
                 "_id": "u1001",
                 "username": "noahford",
@@ -42,7 +42,7 @@ class User(UserBase):
                 "serverIds": ["s1001", "s1002"],
             }
         }
-    }
+    )
 
 
 class UserLogin(BaseModel):

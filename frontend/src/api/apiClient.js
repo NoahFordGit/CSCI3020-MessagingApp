@@ -49,13 +49,12 @@ class APIClient {
         return user;
       }
       
-      // Default user for now (should be replaced with auth)
-      // In production, this would fetch from /users/me after authentication is implemented
-      return { id: 'u1', username: 'Guest', email: 'guest@example.com' };
+      // Return null if no user is authenticated
+      // This should not happen in a properly authenticated app
+      return null;
     } catch (error) {
       console.error('Failed to get current user:', error);
-      // Return default user on error
-      return { id: 'u1', username: 'Guest', email: 'guest@example.com' };
+      return null;
     }
   }
 

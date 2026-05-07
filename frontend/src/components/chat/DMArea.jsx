@@ -174,11 +174,20 @@ export default function DMArea({ currentUser }) {
 
   const handleSend = async () => {
     if (!newMessage.trim() || !selectedUser || !currentUser) return;
+    
+    // Extract user IDs - must have valid IDs
+    const authorId = currentUser.id || currentUser._id;
+    const recipientId = selectedUser.id || selectedUser._id;
+    if (!authorId || !recipientId) {
+      console.error('Cannot send message: missing user IDs', { authorId, recipientId });
+      return;
+    }
+    
     try {
       const sentMessage = await apiClient.createDirectMessage({
         content: newMessage.trim(),
-        authorId: currentUser.id || currentUser._id,
-        recipientId: selectedUser.id || selectedUser._id,
+        authorId,
+        recipientId,
       });
       setNewMessage("");
       if (isFilteringDM) {
